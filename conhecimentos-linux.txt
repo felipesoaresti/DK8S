@@ -1,0 +1,61 @@
+Para ser "foda" em Kubernetes, você tem que entender que o Kubernetes não é mágica, é Linux. Ele é apenas um orquestrador que manipula funcionalidades nativas do kernel do Linux.
+
+Aqui está o "caminho das pedras" do que você precisa dominar no Linux para voar no K8s:
+
+O Coração dos Containers (Kernel Space),
+Você precisa entender que "container" não existe como um objeto físico no Kernel. É uma junção de duas tecnologias:
+
+Namespaces: É o que provê o isolamento.
+O que estudar: Entenda como o Linux isola Processos (PID), Rede (NET), Montagem de arquivos (MNT), Usuários (USER) e Hostnames (UTS).
+Por que: Quando você roda um kubectl exec, você está basicamente entrando no namespace daquele processo.
+Cgroups (Control Groups): É o que provê o limite de recursos.
+O que estudar: Como o Linux limita CPU e Memória de um processo.
+Por que: Isso é exatamente o que acontece quando você define resources.limits e requests no seu Pod (o tema da sua aula do Day-2!). Se você não entender Cgroups, não vai entender por que um Pod sofre OOMKilled (Out of Memory).
+
+Networking (A parte onde o filho chora e a mãe não vê),
+A rede no Kubernetes é complexa, mas é 100% baseada em redes Linux.
+
+IPTables / IPVS: O K8s (via kube-proxy) cria regras de firewall e roteamento para fazer os Services funcionarem.
+O que estudar: Como ler regras de iptables, NAT (Network Address Translation) e encaminhamento de pacotes.
+Interfaces Virtuais e Bridges: Entenda o que é uma veth pair (o cabo virtual que liga o container ao host) e uma bridge (cbr0/docker0).
+DNS: O CoreDNS é vital. Entenda como funciona o 
+/etc/resolv.conf
+ e como o Linux resolve nomes. 90% dos problemas "de rede" no K8s são, na verdade, DNS.
+
+Storage e Sistema de Arquivos,
+OverlayFS: Entenda como funcionam os sistemas de arquivos em camadas (Union Filesystems).
+Por que: É assim que as imagens Docker funcionam. Saber isso te ajuda a entender por que sua imagem está gigante ou por que a escrita em disco dentro do container é mais lenta.
+Mounts e Bind Mounts: Entenda a diferença entre montar um volume e fazer um bind de uma pasta do host.
+Inodes: Saber que disco cheio não é só falta de espaço (GB), mas pode ser falta de endereços de arquivos (Inodes).
+
+Gerenciamento de Processos e Systemd,
+PID 1 (Init Process): Entenda a importância do processo número 1.
+Por que: Se o processo 1 do container morre, o container morre. Se ele não repassa sinais (SIGTERM), seu container não desliga graciosamente (Graceful Shutdown).
+Sinais (Signals): SIGTERM vs SIGKILL. O K8s manda um SIGTERM para o pod parar. Se a aplicação não tratar isso, o K8s espera 30s e manda um SIGKILL (assassinato brutal).
+Systemd: O kubelet (o agente que roda em cada nó) é gerenciado pelo systemd. Você precisa saber olhar os logs dele (journalctl -u kubelet) para debugar nós que não ficam "Ready".
+
+Segurança (Permissões),
+Capabilities: O root dentro do container é o mesmo root do host? (Spoiler: Sim, mas com poderes limitados). Estude Linux Capabilities. É assim que você deixa um container seguro sem dar permissão de root total.
+Usuários e Grupos (UID/GID): Entender como permissões de arquivos no host afetam a leitura dentro do container (especialmente ao usar Volumes persistentes).
+Ferramentas de Troubleshooting (O cinto de utilidades do Batman),
+Para ser foda, você não pode depender só de painel gráfico. Tem que saber usar o terminal para investigar:
+
+Rede: curl (com -v), dig ou nslookup (DNS), tcpdump (capturar pacotes), netstat ou ss (ver portas abertas).
+Processos/Recursos: top ou htop, ps aux, free -m.
+Avançado: strace (ver chamadas de sistema - isso é nível Jedi para descobrir por que um programa travou).
+
+Resumo
+Se você focar em Namespaces, Cgroups e Networking (Iptables/DNS), você já estará na frente de 90% dos profissionais que apenas "operam" o Kubernetes. O resto vem com a prática de quebrar e consertar coisas.
+
+1
+Adicionar reação
+:thumbsup:
+Clique para reagir
+:up:
+Clique para reagir
+:clap:
+Clique para reagir
+Adicionar reação
+Responder
+Encaminhar
+Mais
