@@ -8,3 +8,4 @@ spec:
   containers:
     - image: nginx
       name: meu-nginx
+      resources: {}
