@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  labels:
+    app: treino-deployment
+    app: apache
+  name: treino-deployment
+  namespace: treinamento-day3
+spec:
+  replicas: 1 
+  selector:
+    matchLabels:
+      app: treino-deployment
+      app: apache  
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: treino-deployment
+        app: apache
+    spec:
+      containers:
+        - image: httpd
+          name: apache-treino
+          resources:
+            limits:
+              cpu: 0.3
+              memory: 200Mi
+            requests:
+              cpu: 0.1
+              memory: 64Mi
+
